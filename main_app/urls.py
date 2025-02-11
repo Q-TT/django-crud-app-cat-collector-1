@@ -13,4 +13,10 @@ urlpatterns = [
     # update and delete cat
     path('cats/<int:pk>/update/', views.CatUpdate.as_view(), name='cat-update'),
     path('cats/<int:pk>/delete/', views.CatDelete.as_view(), name='cat-delete'),
+    #eeding route
+    path(
+        'cats/<int:cat_id>/add-feeding/', 
+        views.add_feeding, 
+        name='add-feeding'
+    ),
 ]
