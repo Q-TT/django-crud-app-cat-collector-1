@@ -5,6 +5,7 @@ from .models import Cat, Toy
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView, DetailView
+from django.contrib.auth.views import LoginView
 
 from .forms import FeedingForm
 
@@ -25,9 +26,8 @@ from .forms import FeedingForm
 #     Cat('Bonk', 'selkirk rex', 'Meows loudly.', 6)
 # ]
 
-# Define the home view function
-def home(request):
-    return render(request, 'home.html')
+class Home(LoginView):
+    template_name = 'home.html'
 
 def about(request):
     return render(request, 'about.html')
@@ -38,12 +38,30 @@ def cat_index(request):
 
 def cat_detail(request, cat_id):
     cat = Cat.objects.get(id=cat_id)
-    # instantiate FeedingForm to be rendered in the template
+    # toys = Toy.objects.all()  # Fetch all toys
+    #! Only get the toys the cat does not have
+    toys_cat_doesnt_have = Toy.objects.exclude(id__in = cat.toys.all().values_list('id'))
+
     feeding_form = FeedingForm()
     return render(request, 'cats/detail.html', {
-        # include the cat and feeding_form in the context
-        'cat': cat, 'feeding_form': feeding_form
+        'cat': cat,
+        'feeding_form': feeding_form,
+        'toys': toys_cat_doesnt_have  # Pass toys to the template
     })
+
+def associate_toy(request, cat_id, toy_id):
+    # Note that you can pass a toy's id instead of the whole object
+    Cat.objects.get(id=cat_id).toys.add(toy_id)
+    return redirect('cat-detail', cat_id=cat_id)
+
+def remove_toy(request, cat_id, toy_id):
+    # Look up the cat
+    cat = Cat.objects.get(id=cat_id)
+    # Look up the toy
+    toy = Toy.objects.get(id=toy_id)
+    # Remove the toy from the cat
+    cat.toys.remove(toy)
+    return redirect('cat-detail', cat_id=cat.id)
 
 def add_feeding(request, cat_id):
     # create a ModelForm instance using the data in request.POST
@@ -61,7 +79,9 @@ def add_feeding(request, cat_id):
 #! class based view
 class CatCreate(CreateView):
     model = Cat
-    fields = '__all__' #everthing from model should be listed in the form
+    fields = ['name', 'breed', 'description', 'age'] #! so that toy wil not be prefilled
+    # fields = '__all__' #everthing from model should be listed in the form
+    
     success_url = '/cats/' #This attribute tells Django the URL to redirect to once the form has been successfully processed.
 
 class CatUpdate(UpdateView):
