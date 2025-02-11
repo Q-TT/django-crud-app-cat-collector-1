@@ -3,6 +3,9 @@
 from django.shortcuts import render
 from .models import Cat
 
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from .models import Cat
+
 
 #! add mock data:
 # class Cat:
@@ -34,3 +37,19 @@ def cat_index(request):
 def cat_detail(request, cat_id):
     cat = Cat.objects.get(id=cat_id)
     return render(request, 'cats/detail.html', {'cat': cat})
+
+#! class based view
+class CatCreate(CreateView):
+    model = Cat
+    fields = '__all__' #everthing from model should be listed in the form
+    success_url = '/cats/' #This attribute tells Django the URL to redirect to once the form has been successfully processed.
+
+class CatUpdate(UpdateView):
+    model = Cat
+    # Let's disallow the renaming of a cat by excluding the name field!
+    fields = ['breed', 'description', 'age']
+
+class CatDelete(DeleteView):
+    model = Cat
+    success_url = '/cats/'
+
