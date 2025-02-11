@@ -37,13 +37,25 @@ class Feeding(models.Model):
     )
 
     # Create a cat_id column for each feeding in the database
-    #! cat will be converted to cat_id
+    # cat will be converted to cat_id
     cat = models.ForeignKey(Cat, on_delete=models.CASCADE)
 
     def __str__(self):
         # Nice method for obtaining the friendly value of a Field.choice
         return f"{self.get_meal_display()} on {self.date}"
 
-    #! see newest feeding first
+    # see newest feeding first
     class Meta:
         ordering = ['-date']  # This line makes the newest feedings appear first
+
+
+#! Add the Toy model
+class Toy(models.Model):
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('toy-detail', kwargs={'pk': self.id})
